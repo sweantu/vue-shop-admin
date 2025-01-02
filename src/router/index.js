@@ -12,19 +12,31 @@ const router = createRouter({
           component: () => import('../views/HomePage.vue'),
         },
         {
-          path: 'account',
-          name: 'account',
-          component: () => import('../views/AccountView.vue'),
-        },
-        {
-          path: 'orders',
-          name: 'orders',
-          // component: () => import('../views/OrdersView.vue'),
-        },
-        {
-          path: 'transactions',
-          name: 'transactions',
-          // component: () => import('../views/TransactionsView.vue'),
+          path: 'manage',
+          name: 'manage',
+          component: () => import('../views/ManageView.vue'),
+          children: [
+            {
+              path: 'account-settings',
+              name: 'account-settings',
+              component: () => import('../components/AccountSettings.vue'),
+            },
+            {
+              path: 'users',
+              name: 'users',
+              component: () => import('../components/UserList.vue'),
+            },
+            {
+              path: 'orders',
+              name: 'orders',
+              // component: () => import('../views/OrdersView.vue'),
+            },
+            {
+              path: 'transactions',
+              name: 'transactions',
+              // component: () => import('../views/TransactionsView.vue'),
+            },
+          ],
         },
       ],
     },

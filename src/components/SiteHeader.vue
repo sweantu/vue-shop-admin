@@ -35,11 +35,11 @@ const handleLogout = () => {
               <div
                 class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-300">
                 <div class="py-1">
-                  <router-link to="/account"
+                  <router-link to="/manage/account-settings"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                     Account Settings
                   </router-link>
-                  <router-link to="/orders"
+                  <router-link to="/manage/orders"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                     Orders
                   </router-link>
