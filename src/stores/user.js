@@ -1,5 +1,5 @@
+import { userService } from '@/services/userService'
 import { defineStore } from 'pinia'
-import { getUserInfo } from '../services/api'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user', {
   actions: {
     async fetchUser() {
       if (this.isLoggedIn) {
-        const { data, error } = await getUserInfo(localStorage.getItem('token'))
+        const { data, error } = await userService.getUserInfo()
         if (!error) {
           this.user = data
           this.isLoggedIn = true

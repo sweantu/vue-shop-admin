@@ -1,43 +1,26 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://127.0.0.1:8000'
+export const API_BASE_URL = 'http://127.0.0.1:8000'
 
-export const registerUser = async (userData) => {
-  try {
-    const { data } = await axios.post(`${API_BASE_URL}/users/register`, userData)
-    return { data, error: null }
-  } catch (error) {
-    return {
-      data: null,
-      error: error.response?.data?.detail || 'Registration failed',
-    }
-  }
-}
+// Create axios instance with default config
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
 
-export const loginUser = async (credentials) => {
-  try {
-    const { data } = await axios.post(`${API_BASE_URL}/users/login`, credentials)
-    return { data, error: null }
-  } catch (error) {
-    return {
-      data: null,
-      error: error.response?.data?.detail || 'Login failed',
-    }
+// Add interceptor to handle auth token
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
-}
+  return config
+})
 
-export const getUserInfo = async (token) => {
-  try {
-    const { data } = await axios.get(`${API_BASE_URL}/users/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    return { data, error: null }
-  } catch (error) {
-    return {
-      data: null,
-      error: error.response?.data?.detail || 'Failed to fetch user info',
-    }
-  }
-}
+// Generic error handler
+export const handleApiError = (error) => ({
+  data: null,
+  error: error.response?.data?.detail || 'An error occurred',
+})

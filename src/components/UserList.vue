@@ -1,16 +1,18 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import axios from 'axios'
+import {
+  PlusIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from '@heroicons/vue/24/solid'
+import TablePagination from './common/TablePagination.vue'
+import { userService } from '../services/userService'
 
 const users = ref([])
-const isLoading = ref(true)
+const isLoading = ref(false)
 const error = ref(null)
-const pagination = ref({
-  total: 0,
-  page: 1,
-  size: 10,
-  pages: 1
-})
 
 // Filter and sort states
 const filters = ref({
@@ -19,44 +21,40 @@ const filters = ref({
 })
 
 const sorting = ref({
-  column: 'name',
+  column: 'username',
   order: 'asc'
 })
 
-const fetchUsers = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    const queryParams = new URLSearchParams({
-      page: pagination.value.page.toString(),
-      size: pagination.value.size.toString(),
-      sort_order: sorting.value.order,
-      sort_by: sorting.value.column
-    })
+const pagination = ref({
+  total: 0,
+  page: 1,
+  size: 10,
+  pages: 1
+})
 
-    if (filters.value.role) {
-      queryParams.append('role', filters.value.role)
-    }
-    if (filters.value.search) {
-      queryParams.append('search', filters.value.search)
-    }
+const fetchData = async () => {
+  const params = {
+    page: pagination.value.page,
+    size: pagination.value.size,
+    sort_order: sorting.value.order,
+    sort_by: sorting.value.column,
+    ...(filters.value.role && { role: filters.value.role }),
+    ...(filters.value.search && { search: filters.value.search })
+  }
 
-    const response = await axios.get(`http://127.0.0.1:8000/admin/users/?${queryParams}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    users.value = response.data.items
+  const { data, error } = await userService.getUsers(params)
+  if (error) {
+    console.error('Error fetching users:', error)
+    return
+  }
+  if (data) {
+    users.value = data.items
     pagination.value = {
-      total: response.data.total,
-      page: response.data.page,
-      size: response.data.size,
-      pages: response.data.pages
+      total: data.total,
+      page: data.page,
+      size: data.size,
+      pages: data.pages
     }
-  } catch (err) {
-    error.value = 'Failed to fetch users'
-    console.error('Error fetching users:', err)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -67,12 +65,17 @@ const handleSort = (column) => {
     sorting.value.column = column
     sorting.value.order = 'asc'
   }
-  fetchUsers()
+  fetchData()
+}
+
+const handlePageChange = (newPage) => {
+  pagination.value.page = newPage
+  fetchData()
 }
 
 const getSortIcon = (column) => {
-  if (sorting.value.column !== column) return ''
-  return sorting.value.order === 'asc' ? '↑' : '↓'
+  if (sorting.value.column !== column) return null
+  return sorting.value.order === 'asc' ? ChevronUpIcon : ChevronDownIcon
 }
 
 const formatDate = (dateString) => {
@@ -84,11 +87,12 @@ const formatDate = (dateString) => {
 }
 
 watch([filters], () => {
-  fetchUsers()
+  pagination.value.page = 1 // Reset to first page when filters change
+  fetchData()
 }, { deep: true })
 
 onMounted(() => {
-  fetchUsers()
+  fetchData()
 })
 </script>
 
@@ -104,6 +108,7 @@ onMounted(() => {
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
         <button type="button"
           class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
+          <PlusIcon class="h-4 w-4 mr-2" />
           Add user
         </button>
       </div>
@@ -139,23 +144,39 @@ onMounted(() => {
                 <tr>
                   <th scope="col" @click="handleSort('name')"
                     class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer hover:bg-gray-100">
-                    Name {{ getSortIcon('name') }}
+                    <div class="flex items-center">
+                      Name
+                      <component :is="getSortIcon('name')" v-if="getSortIcon('name')" class="ml-2 h-4 w-4" />
+                    </div>
                   </th>
                   <th scope="col" @click="handleSort('username')"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100">
-                    Username {{ getSortIcon('username') }}
+                    <div class="flex items-center">
+                      Username
+                      <component :is="getSortIcon('username')" v-if="getSortIcon('username')" class="ml-2 h-4 w-4" />
+                    </div>
                   </th>
                   <th scope="col" @click="handleSort('email')"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100">
-                    Email {{ getSortIcon('email') }}
+                    <div class="flex items-center">
+                      Email
+                      <component :is="getSortIcon('email')" v-if="getSortIcon('email')" class="ml-2 h-4 w-4" />
+                    </div>
                   </th>
                   <th scope="col" @click="handleSort('role')"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100">
-                    Role {{ getSortIcon('role') }}
+                    <div class="flex items-center">
+                      Role
+                      <component :is="getSortIcon('role')" v-if="getSortIcon('role')" class="ml-2 h-4 w-4" />
+                    </div>
                   </th>
                   <th scope="col" @click="handleSort('created_at')"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100">
-                    Created {{ getSortIcon('created_at') }}
+                    <div class="flex items-center">
+                      Created
+                      <component :is="getSortIcon('created_at')" v-if="getSortIcon('created_at')"
+                        class="ml-2 h-4 w-4" />
+                    </div>
                   </th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
                   <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -186,8 +207,12 @@ onMounted(() => {
                     </span>
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-                    <button class="text-red-600 hover:text-red-900">Delete</button>
+                    <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                      <PencilSquareIcon class="h-4 w-4" />
+                    </button>
+                    <button class="text-red-600 hover:text-red-900">
+                      <TrashIcon class="h-4 w-4" />
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -198,28 +223,7 @@ onMounted(() => {
     </div>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
-      <div class="flex flex-1 justify-between sm:hidden">
-        <button :disabled="!pagination.has_prev"
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          :class="{ 'opacity-50 cursor-not-allowed': !pagination.has_prev }">
-          Previous
-        </button>
-        <button :disabled="!pagination.has_next"
-          class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          :class="{ 'opacity-50 cursor-not-allowed': !pagination.has_next }">
-          Next
-        </button>
-      </div>
-      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p class="text-sm text-gray-700">
-            Showing <span class="font-medium">{{ (pagination.page - 1) * pagination.size + 1 }}</span> to
-            <span class="font-medium">{{ Math.min(pagination.page * pagination.size, pagination.total) }}</span> of
-            <span class="font-medium">{{ pagination.total }}</span> results
-          </p>
-        </div>
-      </div>
-    </div>
+    <TablePagination :total="pagination.total" :current-page="pagination.page" :page-size="pagination.size"
+      :total-pages="pagination.pages" @page-change="handlePageChange" />
   </div>
 </template>

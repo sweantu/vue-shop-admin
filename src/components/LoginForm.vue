@@ -1,9 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { loginUser } from '../services/api'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-
+import { userService } from '../services/userService'
 const router = useRouter()
 const userStore = useUserStore()
 
@@ -37,7 +36,7 @@ const handleSubmit = async (e) => {
 
   if (Object.keys(errors.value).length === 0) {
     isLoading.value = true
-    const { data, error } = await loginUser(formData.value)
+    const { data, error } = await userService.login(formData.value)
 
     if (error) {
       errors.value.submit = error
