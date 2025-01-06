@@ -5,7 +5,7 @@ import {
   UserCircleIcon,
   ShoppingBagIcon,
   CreditCardIcon,
-  UsersIcon
+  UsersIcon,
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -13,6 +13,7 @@ const route = useRoute()
 const navigation = [
   { name: 'Account Settings', href: '/manage/account-settings', icon: UserCircleIcon },
   { name: 'Users', href: '/manage/users', icon: UsersIcon },
+  { name: 'Products', href: '/manage/products', icon: ShoppingBagIcon },
   { name: 'Orders', href: '/manage/orders', icon: ShoppingBagIcon },
   { name: 'Transactions', href: '/manage/transactions', icon: CreditCardIcon }
 ]
@@ -35,7 +36,7 @@ const currentPath = computed(() => route.path)
           </router-link>
         </nav>
       </aside>
-      <RouterView class="flex-1" />
+      <RouterView class="flex-1 bg-white shadow rounded-lg p-6" />
     </div>
   </div>
 </template>
