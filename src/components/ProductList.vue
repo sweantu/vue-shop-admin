@@ -140,6 +140,8 @@ const handleDeleteConfirm = async () => {
 const handleDeleteCancel = () => {
   deleteModal.value.show = false
 }
+
+const defaultProductImage = '/src/assets/no-image.jpg'
 </script>
 
 <template>
@@ -248,8 +250,18 @@ const handleDeleteCancel = () => {
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
                 <tr v-for="product in products" :key="product.id">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                    {{ product.name }}
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                    <div class="flex items-center">
+                      <div class="h-10 w-10 flex-shrink-0">
+                        <img :src="product.images?.[0] || defaultProductImage" :alt="product.name"
+                          class="h-10 w-10 rounded-full object-cover">
+                      </div>
+                      <div class="ml-4">
+                        <div class="font-medium text-gray-900">{{ product.name }}</div>
+                        <div class="text-gray-500">{{ product.description?.length > 10 ? product.description.slice(0,
+                          10) + '...' : product.description }}</div>
+                      </div>
+                    </div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ product.sku }}</td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ formatPrice(product.price) }}</td>
