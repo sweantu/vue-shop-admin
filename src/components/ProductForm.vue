@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { productService } from '../services/productService'
+import UploadImages from './common/UploadImages.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -18,7 +19,8 @@ const product = ref({
   sku: '',
   category: '',
   tags: [],
-  status: 'draft'
+  status: 'draft',
+  images: []
 })
 
 const categories = [
@@ -33,6 +35,8 @@ const statuses = [
   { id: 'active', name: 'Active' },
   { id: 'inactive', name: 'Inactive' },
 ]
+
+const uploadImagesRef = ref(null)
 
 const addTag = () => {
   if (tagInput.value.trim()) {
@@ -94,10 +98,17 @@ const handleSubmit = async () => {
       return
     }
 
+    // Upload new images first
+    const uploadedImageUrls = await uploadImagesRef.value.uploadImages()
+
     const formData = {
       ...product.value,
       price: parseFloat(product.value.price),
       stock: parseInt(product.value.stock),
+      images: [
+        ...product.value.images, // Keep existing images
+        ...uploadedImageUrls // Add new uploaded images
+      ]
     }
 
     const { error: apiError } = isEditMode.value
@@ -250,6 +261,11 @@ onMounted(async () => {
                   </span>
                 </div>
               </div>
+            </div>
+
+            <!-- Product Images -->
+            <div class="sm:col-span-6">
+              <UploadImages ref="uploadImagesRef" v-model:existingImages="product.images" @error="error = $event" />
             </div>
           </div>
         </div>
