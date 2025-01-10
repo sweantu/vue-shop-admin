@@ -29,6 +29,15 @@ export const userService = {
     }
   },
 
+  async updateProfile(userData) {
+    try {
+      const { data } = await apiClient.put('/users/me', userData)
+      return { data, error: null }
+    } catch (error) {
+      return handleApiError(error)
+    }
+  },
+
   // Admin user management endpoints
   async getUsers(params = {}) {
     try {
